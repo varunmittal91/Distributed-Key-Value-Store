@@ -19,9 +19,10 @@ class handler(socketserver.BaseRequestHandler):
         caddr,cport = self.client_address
         global log
         log.log(1, "Recieved request from Host: '%s', Port: '%d'" % (caddr, cport))
+        client_addr = {'host': caddr, 'port': cport}
         try:
             data = self.request.recv(1024)
-            response = decode_HEADER(log, data)
+            response = decode_HEADER(log, client_addr, data)
             request = self.request
             request.send(response)
         except AttributeError:

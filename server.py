@@ -82,16 +82,8 @@ if __name__ == "__main__":
     # Create and set global logger for client handlers
     update_log(log)
 
-    from lib.tpc import init_response_thread, dest_response_thread
-    # Check if master address sepcified, send a request for master to register peer
-    if mhost:
-        from lib.tcp_client import tcp_client
-        from lib.operations import put
-
-        tcp_client(log, mhost, qport, log, 3, "peer", "%s-%s" % (host,port))
-        put("master", "%s-%d" % (mhost,qport))
-        init_response_thread(log)
+    from lib.tpc import dest_response_thread
 
     # Initiate bind/listen seq for TCP/UDP as per selections
-    connection_class(log, host, port)
+    connection_class(log, host, port, mhost, qport)
     dest_response_thread()

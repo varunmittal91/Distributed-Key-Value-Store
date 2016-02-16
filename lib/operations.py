@@ -1,9 +1,11 @@
 key_val_store = {}
 
-def put(key, data):
+def put(key, data, client_addr=None):
     if key == "peer":
         try:
             host,port = data.split('-')
+            # Extract host from client_addr, as visible to coordinator
+            host = client_addr['host']
             id = "%s-%s" % (host,port)
             try:
                 if id not in key_val_store["peer"]:
@@ -43,7 +45,7 @@ def put(key, data):
     key_val_store[key] = data
     return "0", "Added"
 
-def get(key, data):
+def get(key, data, client_addr=None):
     if key == b"peer":
         import json
         return "0", json.dumps([id for id in key_val_store.get("peer", [])])
@@ -52,7 +54,7 @@ def get(key, data):
     except KeyError:
         return "1", "key does not exist"
 
-def update(key, data):
+def update(key, data, client_addr=None):
     try:
         key_val_store[key]
         key_val_store[key] = data
@@ -60,7 +62,7 @@ def update(key, data):
     except KeyError:
         return "1", "key does not exist"
 
-def delete(key, data):
+def delete(key, data, client_addr=None):
     try:
         key_val_store.pop(key)
         return "0", "deleted"
@@ -76,7 +78,7 @@ oprtns = {
 }
 
 # Helper function to read oprtn and call appropriate lambda function
-def decode_HEADER(log, header):
+def decode_HEADER(log, client_addr, header):
     # Try extracting values or fail with error message
     try:
         oprtn,key,val = header.split(b':')
@@ -121,7 +123,7 @@ def decode_HEADER(log, header):
         except IndexError:
             status,message = 1, "Key not found or data corrupted"
     else:
-        status,message = fnc(key,val)
+        status,message = fnc(key,val,client_addr)
         
     log.log(2, b"Completed request")
     return ("%s:%s" % (status,message)).encode()
