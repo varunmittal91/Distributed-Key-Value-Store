@@ -8,10 +8,7 @@ class tcp_client:
         try:
             s.connect((host, port))
             exchange_mssg(s, *args, **kwargs)
-        except ConnectionRefusedError:
+        except socket.error:
             log.log(0, "Connection failed")
-            return
-        except BrokenPipeError:
-            log.log(0, "Message Transmission failed")
             return
         log.log(1, "Operation completed")

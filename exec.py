@@ -63,7 +63,7 @@ if __name__=="__main__":
         help()
     try:
         file  = open(host_list_file)
-        hosts = [host[:-1] for host in file.readlines()]
+        hosts = [peer_host[:-1] for peer_host in file.readlines()]
     except IOError:
         print "Unable to open host_list_file"
 
@@ -72,8 +72,8 @@ if __name__=="__main__":
     if logfile:
         cmd.extend(["--logfile", logfile])
     subprocess.Popen(cmd)
-    for host in hosts:
-        cmd = ["ssh", "-C", host, "%s/server.py" % dir, "--host", "0.0.0.0", "--port", "0", "-l", "debug",
+    for peer_host in hosts:
+        cmd = ["ssh", "-C", peer_host, "%s/server.py" % dir, "--host", "0.0.0.0", "--port", "0", "-l", "debug",
                    "--mhost", host, "--qport", port]
         if logfile:
             cmd.extend(["--logfile", logfile])
