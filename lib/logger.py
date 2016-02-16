@@ -8,7 +8,11 @@ messages = {
 }
 
 class logger:
-    def __init__(self, level):
+    def __init__(self, level, logfile=None):
+        if logfile:
+            self.logfile = open(logfile, "wb")
+        else:
+            self.logfile = None
         if level == "info":
             self.level = 1
             self.str = "INFO"
@@ -19,4 +23,9 @@ class logger:
             self.level = 0
     def log(self, level, mssg):
         if level <= self.level:
-            print("%s: %s, %s" % (messages[level], datetime.now(), mssg))
+            entry = "%s: %s, %s" % (messages[level], datetime.now(), mssg)
+            if self.logfile:
+                self.logfile.write(("%s\n" % entry).encode())
+                self.logfile.flush()
+            else:
+                print(entry)
