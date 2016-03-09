@@ -12,6 +12,12 @@ the master.<br>
 After the registration is successful, master will send requests to the new peer and wait for ack for vote/commit operation in 
 case of any write/update to the server.<br>
 
+### Running on cluster
+To Run the project on cluster, samples/deploy.sh can be used. The script assumes that the ssh keys have already ben placed and 
+the server can execute a command without a password.<br>
+Also there needs to be a file called hostlist with server addresses/qualified names in it.<br>
+Server supports dynamic registration and more clients can be connected manually at any point of time.
+
 ### Code Organization
 The code is organized as following 
 

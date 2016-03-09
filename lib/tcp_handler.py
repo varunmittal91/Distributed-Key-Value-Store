@@ -26,8 +26,8 @@ class tcp_handler:
             from .operations import put
             from .tpc import init_response_thread, dest_response_thread
 
-            tcp_client(log, mhost, qport, log, 3, "peer", "%s-%s" % (host,port))
             put("master", "%s-%d" % (mhost,qport))
+            tcp_client(log, mhost, qport, log, 3, "peer", "%s-%s" % (host,port))
             init_response_thread(log)
         try:
             log.log(2, "Staring infinite loop")

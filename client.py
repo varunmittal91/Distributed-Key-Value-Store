@@ -90,4 +90,4 @@ if __name__ == "__main__":
         exit(1)
 
     # Initiate connect seq for TCP/UDP as per selections
-    connection_class(log, host, port, log, oprtn, key, val)
+    connection_class(log, host, port, log, oprtn, key, val, cclock=True)

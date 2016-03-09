@@ -1,7 +1,10 @@
 key_val_store = {}
 
 def put(key, data, client_addr=None):
-    if key == "peer":
+    if key == "__all__":
+        import json
+        return 0, json.dumps(key_val_store)
+    elif key == "peer":
         try:
             host,port = data.split('-')
             # Extract host from client_addr, as visible to coordinator
@@ -77,17 +80,38 @@ oprtns = {
     3: [put   , True],
 }
 
+def prepare_response(status, reason, current_clock):
+    return ("%d:%s:%d" % (status, reason, current_clock)).encode()
+
 # Helper function to read oprtn and call appropriate lambda function
 def decode_HEADER(log, client_addr, header):
+    from .clock import get_clock,update_clock 
+    # Get current clock
+    current_clock = get_clock()
     # Try extracting values or fail with error message
+    try:
+        # Get client clock
+        header,cclock = header.split(b'==')
+        # If it is a client and not slave responding do not check clock 
+        if int(cclock) != -1:
+            if current_clock > int(cclock):
+                return prepare_response(1, "Clock out of sync", current_clock)
+            update_clock(int(cclock)+1)
+    except:
+        log.log(0, "client did not send the clock")
+        return prepare_response(1, "No clock recieved", current_clock)
+        return b"1:No clock recieved:%d" % current_clock
+
     try:
         oprtn,key,val = header.split(b':')
         key = key.decode()
         val = val.decode()
     except:
         log.log(0, "Invalid operation or malformed request")
+        return current_clock(1, "Invalid input", current_clock)
         return b"1:Invalid input"
-    log.log(2, "Receieved request, OPRTN:%s, key:%s, val:%s" % (oprtn, key, val))
+    log.log(2, "Receieved request, OPRTN:%s, key:%s, val:%s, client_clock:%s, current_clock:%d" % 
+            (oprtn, key, val, cclock, current_clock))
     oprtn = int(oprtn)
     fnc,tpc = oprtns[oprtn]
 
@@ -122,8 +146,12 @@ def decode_HEADER(log, client_addr, header):
             status,message = 0, values[0]
         except IndexError:
             status,message = 1, "Key not found or data corrupted"
+    elif oprtn == 1 and key == "__all__":
+        import json
+        return prepare_response(0, json.dumps(key_val_store), current_clock)
     else:
         status,message = fnc(key,val,client_addr)
         
     log.log(2, b"Completed request")
-    return ("%s:%s" % (status,message)).encode()
+    return prepare_response(int(status), message, current_clock)
+    return ("%s:%s" % (int(status),message)).encode()
